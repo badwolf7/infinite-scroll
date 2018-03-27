@@ -15,9 +15,8 @@ class AppHeader extends Component {
 }
 
 const AppHeaderContainer = styled.header`
-  background-color: ${colors.grey.hex};
+  background-color: ${colors.white.hex};
   border-bottom: 30px solid ${colors.red.hex};
-  color: white;
   padding: ${pxToEm(30)};
   text-align: center;
 

@@ -63,7 +63,7 @@ const truncateAtWidth = (width = '100px') => {
  * @param {number|string} opacity Opacity set for box-shadow. Defaults to 0.5.
  * @return {string} Returns a box-shadow definition.
  */
-const boxShadow = (color = colors.grey.rgb, offsets = ['0', '3px', '8px', 0], opacity = 0.3) =>
+const boxShadow = (color = colors.black.rgb, offsets = ['0', '4px', '8px', 0], opacity = 0.75) =>
   `box-shadow: ${offsets.join(' ')} rgba(${color}, ${opacity})`;
 
 /**

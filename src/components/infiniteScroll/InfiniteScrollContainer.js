@@ -3,26 +3,129 @@ import { boxShadow, colors, createTransitionForProperties, pxToEm } from 'styles
 import { ScrollViews } from 'util/enums/scrollEnums';
 import ImagesData from 'data/images.json';
 
+const imagesLength = ImagesData.length;
+
+/**
+ * An infinite scroll container with a list that will scroll infinitely in either direction. Allows for toggling the
+ * list view type between horizontal (default), vertical, and grid.
+ *
+ * TODO: Add functionality to the scroll fro vertical and grid.
+ *
+ * @extends Component
+ */
 class InfiniteScrollContainer extends Component {
   state = {
+    currentStartingIndex: 0,
+    imageCount: 4,
     selectedView: 'horizontal',
   }
 
+  componentWillMount() {
+    this.loadImages();
+  }
+
+  /**
+   * When the view type is changed / updated update the component state to reflect the necessary changes.
+   *
+   * @param {object} event DOM event object.
+   */
   onViewSelect = (event) => {
     const { value } = event.target;
     const { selectedView } = this.state;
+    let { imageCount } = this.state;
 
     if (!_.isEqual(selectedView, value)) {
+      // Set the image count based on the selected view
+      switch (selectedView) {
+        case ScrollViews.VERTICAL: {
+          // imageCount = 3;
+          imageCount = imagesLength - 1;
+          break;
+        }
+        case ScrollViews.GRID: {
+          // imageCount = 8;
+          imageCount = imagesLength - 1;
+          break;
+        }
+        case ScrollViews.HORIZONTAL:
+        default: {
+          imageCount = 4;
+          break;
+        }
+      }
+
       this.setState({
+        imageCount,
         selectedView: value,
-      });
+      }, this.loadImages);
     }
   }
 
+  /**
+   * Load the images to be displayed in the UI. This has catches to update the current number of images loaded as well
+   * as to allow for infinite scrolling in either direction.
+   *
+   * TODO: Add the ability to "pre-load" images to the left or right to enable scrolling type action.
+   *
+   * @param {number} index A passed starting index, will be default over the current state.
+   */
+  loadImages = (index) => {
+    const { currentStartingIndex, imageCount } = this.state;
+
+    let startingIndex = (!_.isUndefined(index)) ? index : currentStartingIndex;
+
+    // Infinite scroll - loop the index around the available images list length.
+    if (startingIndex < 0) {
+      startingIndex = imagesLength + startingIndex;
+    } else if (startingIndex >= imagesLength) {
+      startingIndex -= imagesLength;
+    }
+
+    // Min and max values for the range of images to display
+    const visibleRange = [startingIndex, startingIndex + imageCount];
+    const visibleImages = [];
+
+    // Aggregate the images to display in a list.
+    for (let visibleIndex = visibleRange[0]; visibleIndex <= visibleRange[1]; visibleIndex++) {
+      let imageIndex = visibleIndex;
+
+      // Ensure that the index being used isn't outside the available images indexes.
+      if (imageIndex >= imagesLength) {
+        imageIndex -= imagesLength;
+      }
+
+      visibleImages.push(ImagesData[imageIndex]);
+    }
+
+    this.setState({
+      currentStartingIndex: startingIndex,
+      visibleImages,
+    });
+  }
+
+  /**
+   * Based on the directional arrow clicked update the starting index for the images in the list.
+   *
+   * @param {object} event DOM event object.
+   */
+  scrollImages = (event) => {
+    const { dataset: { direction } } = event.target;
+    const { currentStartingIndex, imageCount } = this.state;
+    let newStartingIndex = currentStartingIndex;
+
+    if (direction === 'next') {
+      newStartingIndex += imageCount;
+    } else {
+      newStartingIndex -= imageCount;
+    }
+
+    this.loadImages(newStartingIndex);
+  }
+
   render() {
-    const { selectedView } = this.state;
+    const { selectedView, visibleImages } = this.state;
     return (
-      <section>
+      <InfiniteScrollSection>
         <ViewSwitcher>
           <span>Select View:</span>
           <input
@@ -68,25 +171,49 @@ class InfiniteScrollContainer extends Component {
           </label>
         </ViewSwitcher>
 
-        <InfiniteScrollList className={selectedView} selectedView={selectedView}>
-          {ImagesData.map((imageSrc, imageIndex) => {
-            const key = `${imageSrc}-${imageIndex}`;
+        <InfiniteScrollDiv>
+          <ScrollButton
+            className={`scroll-button--back--${selectedView}`}
+            data-direction='back'
+            onClick={this.scrollImages}
+            type='button'
+          >
+            &lt;
+          </ScrollButton>
+          <InfiniteScrollList className={selectedView} selectedView={selectedView}>
+            {visibleImages.map((imageSrc, imageIndex) => {
+              const key = `${imageSrc}-${imageIndex}`;
 
-            return (
-              <li key={key}><img src={imageSrc} alt={imageIndex} /></li>
-            );
-          })}
-        </InfiniteScrollList>
-      </section>
+              return (
+                <li key={key}><img src={imageSrc} alt={imageIndex} /></li>
+              );
+            })}
+          </InfiniteScrollList>
+          <ScrollButton
+            className={`scroll-button--next--${selectedView}`}
+            data-direction='next'
+            onClick={this.scrollImages}
+            type='button'
+          >
+            &gt;
+          </ScrollButton>
+        </InfiniteScrollDiv>
+      </InfiniteScrollSection>
     );
   }
 }
+
+const InfiniteScrollSection = styled.section`
+  height: calc(100vh - ${pxToEm(230)});
+  overflow: hidden;
+  width: 100vw;
+`;
 
 const ViewSwitcher = styled.header`
   align-content: center;
   align-items: center;
   display: flex;
-  padding: ${pxToEm(15)};
+  padding: ${pxToEm(15)} 3vw;
 
   input {
     display: none;
@@ -100,6 +227,10 @@ const ViewSwitcher = styled.header`
     svg {
       height: ${pxToEm(40)} !important;
       width: auto !important;
+
+      * {
+        fill: ${colors.white.hex} !important;
+      }
     }
 
     &.active {
@@ -110,29 +241,119 @@ const ViewSwitcher = styled.header`
   }
 `;
 
-const InfiniteScrollList = styled.ul`
-  align-items: center;
-  align-content: center;
-  display: flex;
-  width: 100vw;
+const InfiniteScrollDiv = styled.div`
+  box-sizing: border-box;
+  height: calc(97vh - ${pxToEm(230)});
+  padding: 0 3vw;
+  position: relative;
+`;
 
-  img {
-    min-height: ${pxToEm(250)};
-    margin: ${pxToEm(14)};
-    ${boxShadow()};
+const ScrollButton = styled.button`
+  align-items: center;
+  background: ${colors.black.hex};
+  border: none;
+  box-sizing: border-box;
+  color: ${colors.white.hex};
+  content: '>';
+  display: flex;
+  font-size: ${pxToEm(35)};
+  font-weight: 700;
+  height: ${pxToEm(100)};
+  justify-content: center;
+  outline: none;
+  position: absolute;
+  top: ${pxToEm(50)};
+  transform-origin: center;
+  width: 3vw;
+  z-index: 5;
+  ${createTransitionForProperties(['color'])};
+
+  &.scroll-button--back--horizontal {
+    left: 0;
   }
 
-  &.horizontal {
-    overflow-x: scroll;
+  &.scroll-button--next--horizontal {
+    right: 0;
+  }
+
+  &.scroll-button--back--vertical,
+  &.scroll-button--next--vertical,
+  &.scroll-button--back--grid,
+  &.scroll-button--next--grid {
+    display: none;
+    transform: rotate(90deg);
+  }
+
+  &.scroll-button--back--vertical,
+  &.scroll-button--next--vertical {
+    left: ${pxToEm(100)};
+  }
+
+  &.scroll-button--back--vertical {
+    top: 0;
+  }
+
+  &.scroll-button--next--vertical {
+    bottom: 0;
+  }
+
+  &.scroll-button--back--grid,
+  &.scroll-button--next--grid {
+    left: 48.5vw;
+  }
+
+  &.scroll-button--back--grid {
+    top: calc(50vh - ${pxToEm(230)});
+    left: 0;
+  }
+
+  &.scroll-button--next--grid {
+    top: calc(50vh - ${pxToEm(230)});
+    right: 0;
+  }
+
+  &:hover {
+    color: ${colors.red.hex};
+  }
+`;
+
+const InfiniteScrollList = styled.ul`
+  box-sizing: border-box;
+  display: flex;
+  height: calc(97vh - ${pxToEm(230)});
+  overflow: hidden;
+  position: relative;
+
+  li,
+  img {
+    height: ${pxToEm(200)};
+  }
+
+  img {
+    cursor: pointer;
+    margin: ${pxToEm(8)} ${pxToEm(16)} ${pxToEm(8)} 0;
+    min-height: ${pxToEm(200)};
+    ${boxShadow()};
+    ${createTransitionForProperties(['height', 'transform', 'width'])};
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+
+  &.horizontal li:first-child img {
+    transform-origin: center left;
   }
 
   &.vertical {
     flex-direction: column;
+    overflow-y: scroll;
   }
 
   &.grid {
     flex-wrap: wrap;
-    justify-content: space-around;
+    justify-content: center;
+    overflow-y: scroll;
 
     &:after {
       content: "";
@@ -140,7 +361,22 @@ const InfiniteScrollList = styled.ul`
     }
 
     img {
-      width: calc(33.3333vw - ${pxToEm(40)});
+      height: auto;
+      width: calc(${(1 / 3 * 94)}vw - ${pxToEm(30)});
+    }
+
+    li {
+      &:nth-child(3n+1) img {
+        transform-origin: center left;
+      }
+
+      &:nth-child(3n+2) img {
+        transform-origin: center;
+      }
+
+      &:nth-child(3n+3) img {
+        transform-origin: center right;
+      }
     }
   }
 `;
