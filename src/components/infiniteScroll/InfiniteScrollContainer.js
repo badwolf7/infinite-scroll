@@ -52,6 +52,20 @@ class InfiniteScrollContainer extends Component {
           >
             <span className='fas fa-ellipsis-v' />
           </label>
+
+          <input
+            id={`view-switch--${ScrollViews.GRID}`}
+            type='radio'
+            name='scroll-view-switch'
+            onChange={this.onViewSelect}
+            value={ScrollViews.GRID}
+          />
+          <label
+            className={((selectedView === ScrollViews.GRID) && 'active').toString()}
+            htmlFor={`view-switch--${ScrollViews.GRID}`}
+          >
+            <span className='fas fa-th' />
+          </label>
         </ViewSwitcher>
 
         <InfiniteScrollList className={selectedView} selectedView={selectedView}>
@@ -100,17 +114,34 @@ const InfiniteScrollList = styled.ul`
   align-items: center;
   align-content: center;
   display: flex;
-  overflow-x: scroll;
   width: 100vw;
+
+  img {
+    min-height: ${pxToEm(250)};
+    margin: ${pxToEm(14)};
+    ${boxShadow()};
+  }
+
+  &.horizontal {
+    overflow-x: scroll;
+  }
 
   &.vertical {
     flex-direction: column;
   }
 
-  li img {
-    min-height: ${pxToEm(250)};
-    margin: 0 ${pxToEm(20)};
-    ${boxShadow()};
+  &.grid {
+    flex-wrap: wrap;
+    justify-content: space-around;
+
+    &:after {
+      content: "";
+      flex: auto;
+    }
+
+    img {
+      width: calc(33.3333vw - ${pxToEm(40)});
+    }
   }
 `;
 
