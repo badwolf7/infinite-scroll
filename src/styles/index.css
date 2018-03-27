@@ -4,10 +4,17 @@
  * http://getbem.com/introduction/
  */
 
-html {
+html,
+body {
+  background-color: #F5F5F1;
   color: #030303;
   font-family: 'Helvetica Neue', Helvetica, Verdana, Geneva, Tahoma, Arial, sans-serif;
   font-size: 14px;
+  max-height: 100vh;
+  min-height: 100vh;
+  min-width: 100vw;
+  overflow-x: hidden;
+  overflow-y: scroll;
 }
 
 * {
@@ -16,8 +23,6 @@ html {
 }
 
 body {
-  background-color: #F7F7F7;
-  color: #030303;
   margin: 0;
   padding: 0;
 }

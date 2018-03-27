@@ -58,12 +58,12 @@ const truncateAtWidth = (width = '100px') => {
  * Returns a box-shadow property with the default settings. Useful for maintaining consistency throughout shadow
  * placements.
  *
- * @param {string} color Rgb color. Applies boxShadowBlue by default.
+ * @param {string} color Rgb color. Applies grey by default.
  * @param {[string]} offsets Array of offset measurements.
  * @param {number|string} opacity Opacity set for box-shadow. Defaults to 0.5.
  * @return {string} Returns a box-shadow definition.
  */
-const boxShadow = (color = colors.boxShadowBlue.rgb, offsets = ['0', '6px', '6px', 0], opacity = 0.5) =>
+const boxShadow = (color = colors.grey.rgb, offsets = ['0', '3px', '8px', 0], opacity = 0.3) =>
   `box-shadow: ${offsets.join(' ')} rgba(${color}, ${opacity})`;
 
 /**
