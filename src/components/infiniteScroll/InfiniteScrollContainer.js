@@ -13,6 +13,8 @@ const imagesLengthZero = imagesLength - 1;
  *
  * TODO: Add functionality to the scroll fro vertical and grid.
  *
+ * Note: This would have been sooo much easier with a library such as react-infinity
+ *
  * @extends Component
  */
 class InfiniteScrollContainer extends Component {
@@ -48,13 +50,18 @@ class InfiniteScrollContainer extends Component {
     }
   }
 
+  /**
+   * Update the count of loaded images and then update the state image data.
+   *
+   * TODO: Need to add functionality for:
+   *   - Vertical
+   *   - Grid
+   */
   updateImageCount = () => {
     const { imageCount, selectedView } = this.state;
     const containerWidth = document.querySelector('.infinite-scroll-list').clientWidth;
     const imageWidth = document.querySelectorAll('.show-image')[0].clientWidth;
     let newImageCount = imageCount;
-
-    console.log(selectedView, imageCount, newImageCount);
 
     // Set the image count based on the selected view
     switch (selectedView) {
@@ -67,13 +74,11 @@ class InfiniteScrollContainer extends Component {
       case ScrollViews.GRID: {
         // TODO: Set this section up to load the grid based on height and width of the container.
         // imageCount = 8;
-        console.log('in grid');
         newImageCount = imagesLengthZero;
         break;
       }
       case ScrollViews.HORIZONTAL:
       default: {
-        console.log('horizontal / default');
         newImageCount = Math.ceil(containerWidth / imageWidth) - 1;
         break;
       }
