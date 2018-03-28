@@ -134,6 +134,11 @@ class InfiniteScrollContainer extends Component {
     this.loadImages(newStartingIndex);
   }
 
+  /**
+   * TODO: Create separate components for:
+   *   - ViewSwitcher
+   *   - InfiniteScroll
+   */
   render() {
     const { selectedView, visibleImages } = this.state;
     return (
