@@ -8,6 +8,7 @@
     "lint:js": "./node_modules/.bin/eslint **/*",
     "lint:styled": "stylelint './src/**/*.js'",
     "start": "react-scripts start",
+    "test": "react-scripts test --env=jsdom",
     "storybook": "start-storybook -p 9001 -c .storybook"
   },
   "dependencies": {

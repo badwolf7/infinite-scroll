@@ -1,8 +1,8 @@
 import { React, ReactDOM } from 'appReact';
-import App from './App';
+import AppHeader from './AppHeader';
 
-it('renders App without crashing', () => {
+it('renders AppHeader without crashing', () => {
   const div = document.createElement('div');
-  ReactDOM.render(<App />, div);
+  ReactDOM.render(<AppHeader />, div);
   ReactDOM.unmountComponentAtNode(div);
 });
