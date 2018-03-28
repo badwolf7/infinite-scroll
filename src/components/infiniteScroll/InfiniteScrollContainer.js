@@ -5,6 +5,7 @@ import ImagesData from 'data/images.json';
 
 const { faEllipsisV, faEllipsisH, faTh } = FontAwesomeSolid;
 const imagesLength = ImagesData.length;
+const imagesLengthZero = imagesLength - 1;
 
 /**
  * An infinite scroll container with a list that will scroll infinitely in either direction. Allows for toggling the
@@ -25,7 +26,6 @@ class InfiniteScrollContainer extends Component {
     this.loadImages();
 
     setTimeout(() => {
-      console.log('timeout');
       this.onViewSelect({ target: { value: 'horizontal' } });
     }, 200);
   }
@@ -38,37 +38,50 @@ class InfiniteScrollContainer extends Component {
   onViewSelect = (event) => {
     const { value } = event.target;
     const { selectedView } = this.state;
-    let { imageCount } = this.state;
 
+    if (!_.isEqual(selectedView, value)) {
+      this.setState({
+        selectedView: value,
+      }, this.updateImageCount);
+    } else {
+      this.updateImageCount();
+    }
+  }
+
+  updateImageCount = () => {
+    const { imageCount, selectedView } = this.state;
     const containerWidth = document.querySelector('.infinite-scroll-list').clientWidth;
     const imageWidth = document.querySelectorAll('.show-image')[0].clientWidth;
-    const newImageCount = Math.ceil(containerWidth / imageWidth) - 1;
-    console.log(document.querySelector('.infinite-scroll-list'), containerWidth, imageWidth, newImageCount);
+    let newImageCount = imageCount;
 
-    if (!_.isEqual(selectedView, value) || imageCount !== newImageCount) {
-      // Set the image count based on the selected view
-      switch (selectedView) {
-        case ScrollViews.VERTICAL: {
-          // imageCount = 3;
-          imageCount = imagesLength - 1;
-          break;
-        }
-        case ScrollViews.GRID: {
-          // imageCount = 8;
-          imageCount = imagesLength - 1;
-          break;
-        }
-        case ScrollViews.HORIZONTAL:
-        default: {
-          imageCount = newImageCount;
-          break;
-        }
+    console.log(selectedView, imageCount, newImageCount);
+
+    // Set the image count based on the selected view
+    switch (selectedView) {
+      case ScrollViews.VERTICAL: {
+        // TODO: Set this section up to load the column based on height of the container.
+        // imageCount = 3;
+        newImageCount = imagesLengthZero;
+        break;
       }
-      console.log(imageCount);
+      case ScrollViews.GRID: {
+        // TODO: Set this section up to load the grid based on height and width of the container.
+        // imageCount = 8;
+        console.log('in grid');
+        newImageCount = imagesLengthZero;
+        break;
+      }
+      case ScrollViews.HORIZONTAL:
+      default: {
+        console.log('horizontal / default');
+        newImageCount = Math.ceil(containerWidth / imageWidth) - 1;
+        break;
+      }
+    }
 
+    if (!_.isEqual(imageCount, newImageCount)) {
       this.setState({
-        imageCount,
-        selectedView: value,
+        imageCount: newImageCount,
       }, this.loadImages);
     }
   }
@@ -343,12 +356,15 @@ const InfiniteScrollList = styled.ul`
 
   li,
   img {
-    height: ${pxToEm(200)};
+    min-height: ${pxToEm(200)};
+  }
+
+  li {
+    margin: ${pxToEm(8)} ${pxToEm(16)} ${pxToEm(8)} 0;
   }
 
   img {
     cursor: pointer;
-    margin: ${pxToEm(8)} ${pxToEm(16)} ${pxToEm(8)} 0;
     min-height: ${pxToEm(200)};
     ${boxShadow()};
     ${createTransitionForProperties(['height', 'transform', 'width'])};
@@ -379,10 +395,12 @@ const InfiniteScrollList = styled.ul`
 
     img {
       height: auto;
-      width: calc(${(1 / 3 * 94)}% - ${pxToEm(30)});
+      width: 100%;
     }
 
     li {
+      width: calc(${(1 / 3 * 94)}% - ${pxToEm(30)});
+
       &:nth-child(3n+1) img {
         transform-origin: center left;
       }
