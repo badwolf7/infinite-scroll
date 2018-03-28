@@ -6,6 +6,7 @@ import { colors, pxToEm } from 'styles/util';
 const StorybookWrapper = ({ story }) => <Wrapper>{story()}</Wrapper>;
 
 const Wrapper = styled.div`
+  box-sizing: border-box;
   padding: ${pxToEm(30)};
   width: 100%;
 

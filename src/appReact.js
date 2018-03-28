@@ -23,9 +23,14 @@ import styled, { ThemeProvider } from 'styled-components';
 import theme from 'styled-theming';
 import * as _ from 'lodash';
 
+import FontAwesomeIcon from '@fortawesome/react-fontawesome';
+import FontAwesomeSolid from '@fortawesome/fontawesome-free-solid';
+
 export {
   _,
   Component,
+  FontAwesomeIcon,
+  FontAwesomeSolid,
   Link,
   MemoryRouter,
   NavLink,

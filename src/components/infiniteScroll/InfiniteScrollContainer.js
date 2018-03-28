@@ -1,8 +1,9 @@
-import { _, Component, React, styled } from 'appReact';
+import { _, Component, FontAwesomeIcon, FontAwesomeSolid, React, styled } from 'appReact';
 import { boxShadow, colors, createTransitionForProperties, pxToEm } from 'styles/util';
 import { ScrollViews } from 'util/enums/scrollEnums';
 import ImagesData from 'data/images.json';
 
+const { faEllipsisV, faEllipsisH, faTh } = FontAwesomeSolid;
 const imagesLength = ImagesData.length;
 
 /**
@@ -22,6 +23,11 @@ class InfiniteScrollContainer extends Component {
 
   componentWillMount() {
     this.loadImages();
+
+    setTimeout(() => {
+      console.log('timeout');
+      this.onViewSelect({ target: { value: 'horizontal' } });
+    }, 200);
   }
 
   /**
@@ -34,7 +40,12 @@ class InfiniteScrollContainer extends Component {
     const { selectedView } = this.state;
     let { imageCount } = this.state;
 
-    if (!_.isEqual(selectedView, value)) {
+    const containerWidth = document.querySelector('.infinite-scroll-list').clientWidth;
+    const imageWidth = document.querySelectorAll('.show-image')[0].clientWidth;
+    const newImageCount = Math.ceil(containerWidth / imageWidth) - 1;
+    console.log(document.querySelector('.infinite-scroll-list'), containerWidth, imageWidth, newImageCount);
+
+    if (!_.isEqual(selectedView, value) || imageCount !== newImageCount) {
       // Set the image count based on the selected view
       switch (selectedView) {
         case ScrollViews.VERTICAL: {
@@ -49,10 +60,11 @@ class InfiniteScrollContainer extends Component {
         }
         case ScrollViews.HORIZONTAL:
         default: {
-          imageCount = 4;
+          imageCount = newImageCount;
           break;
         }
       }
+      console.log(imageCount);
 
       this.setState({
         imageCount,
@@ -139,7 +151,7 @@ class InfiniteScrollContainer extends Component {
             className={((selectedView === ScrollViews.HORIZONTAL) && 'active').toString()}
             htmlFor={`view-switch--${ScrollViews.HORIZONTAL}`}
           >
-            <span className='fas fa-ellipsis-h' />
+            <FontAwesomeIcon icon={faEllipsisH} />
           </label>
 
           <input
@@ -153,7 +165,7 @@ class InfiniteScrollContainer extends Component {
             className={((selectedView === ScrollViews.VERTICAL) && 'active').toString()}
             htmlFor={`view-switch--${ScrollViews.VERTICAL}`}
           >
-            <span className='fas fa-ellipsis-v' />
+            <FontAwesomeIcon icon={faEllipsisV} />
           </label>
 
           <input
@@ -167,7 +179,7 @@ class InfiniteScrollContainer extends Component {
             className={((selectedView === ScrollViews.GRID) && 'active').toString()}
             htmlFor={`view-switch--${ScrollViews.GRID}`}
           >
-            <span className='fas fa-th' />
+            <FontAwesomeIcon icon={faTh} />
           </label>
         </ViewSwitcher>
 
@@ -180,12 +192,12 @@ class InfiniteScrollContainer extends Component {
           >
             &lt;
           </ScrollButton>
-          <InfiniteScrollList className={selectedView} selectedView={selectedView}>
+          <InfiniteScrollList className={`infinite-scroll-list ${selectedView}`} selectedView={selectedView}>
             {visibleImages.map((imageSrc, imageIndex) => {
               const key = `${imageSrc}-${imageIndex}`;
 
               return (
-                <li key={key}><img src={imageSrc} alt={imageIndex} /></li>
+                <li key={key}><img className='show-image' src={imageSrc} alt={imageIndex} /></li>
               );
             })}
           </InfiniteScrollList>
@@ -206,14 +218,14 @@ class InfiniteScrollContainer extends Component {
 const InfiniteScrollSection = styled.section`
   height: calc(100vh - ${pxToEm(230)});
   overflow: hidden;
-  width: 100vw;
+  width: 100%;
 `;
 
 const ViewSwitcher = styled.header`
   align-content: center;
   align-items: center;
   display: flex;
-  padding: ${pxToEm(15)} 3vw;
+  padding: ${pxToEm(15)} 3%;
 
   input {
     display: none;
@@ -244,7 +256,7 @@ const ViewSwitcher = styled.header`
 const InfiniteScrollDiv = styled.div`
   box-sizing: border-box;
   height: calc(97vh - ${pxToEm(230)});
-  padding: 0 3vw;
+  padding: 0 3%;
   position: relative;
 `;
 
@@ -264,7 +276,7 @@ const ScrollButton = styled.button`
   position: absolute;
   top: ${pxToEm(50)};
   transform-origin: center;
-  width: 3vw;
+  width: 3%;
   z-index: 5;
   ${createTransitionForProperties(['color'])};
 
@@ -299,7 +311,7 @@ const ScrollButton = styled.button`
 
   &.scroll-button--back--grid,
   &.scroll-button--next--grid {
-    left: 48.5vw;
+    left: 48.5%;
   }
 
   &.scroll-button--back--grid {
@@ -362,7 +374,7 @@ const InfiniteScrollList = styled.ul`
 
     img {
       height: auto;
-      width: calc(${(1 / 3 * 94)}vw - ${pxToEm(30)});
+      width: calc(${(1 / 3 * 94)}% - ${pxToEm(30)});
     }
 
     li {
